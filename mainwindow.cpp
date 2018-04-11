@@ -113,12 +113,35 @@ void MainWindow::createControls() {
     }
 
 
-
-
-
 }
 
 void MainWindow::removeControls() {
+
+    const int nodesCount = nodeCountHalf * 2;
+
+    for (int i = 0; i < nodesCount; i++) {
+
+
+        this->layout()->removeWidget(nodes[i].editId);
+        if (nodes[i].editId != NULL) delete nodes[i].editId;
+
+
+        this->layout()->removeWidget(nodes[i].editData);
+        if (nodes[i].editData != NULL) delete nodes[i].editData;
+
+        this->layout()->removeWidget(nodes[i].editDecode);
+        if (nodes[i].editDecode != NULL) delete nodes[i].editDecode;
+
+        this->layout()->removeWidget(nodes[i].labelTime);
+        if (nodes[i].labelTime != NULL) delete nodes[i].labelTime;
+
+        this->layout()->removeWidget(nodes[i].checkIsRepeat);
+        if (nodes[i].checkIsRepeat != NULL) delete nodes[i].checkIsRepeat;
+
+        memset(nodes, 0, sizeof(nodes));
+
+
+    }
 
 }
 
@@ -129,6 +152,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    memset(nodes, 0, sizeof(nodes));
+
 }
 
 MainWindow::~MainWindow()
@@ -144,6 +170,7 @@ void MainWindow::on_pushButtonStart_clicked()
 
 void MainWindow::on_pushButton_clicked()
 {
+    removeControls();
     createControls();
 
 }

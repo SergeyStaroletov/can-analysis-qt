@@ -44,36 +44,34 @@ void MainWindow::createControls() {
 
         nodes[i].editId = new QLineEdit(ui->groupBoxData);
         nodes[i].editId->setGeometry(offsetX + ui->groupBoxData->x(),
-                                     offsetY + ui->groupBoxData->y() * oneHeight,
+                                     offsetY + ui->groupBoxData->y() + oneHeight * i,
                                      50, 21);
         this->layout()->addWidget(nodes[i].editId);
 
         nodes[i].editData = new QLineEdit(ui->groupBoxData);
         nodes[i].editData->setGeometry(offsetX + ui->groupBoxData->x() + 70,
-                                     offsetY + ui->groupBoxData->y() * oneHeight,
+                                     offsetY + ui->groupBoxData->y() + oneHeight * i,
                                      220, 21);
         this->layout()->addWidget(nodes[i].editData);
 
         nodes[i].editDecode = new QLineEdit(ui->groupBoxData);
         nodes[i].editDecode->setGeometry(offsetX + ui->groupBoxData->x() + 300,
-                                     offsetY + ui->groupBoxData->y() * oneHeight,
+                                     offsetY + ui->groupBoxData->y() + oneHeight * i,
                                      80, 21);
         this->layout()->addWidget(nodes[i].editDecode);
 
         nodes[i].labelTime = new QLabel("0s", ui->groupBoxData);
         nodes[i].labelTime->setGeometry(offsetX + ui->groupBoxData->x() + 390,
-                                     offsetY + ui->groupBoxData->y() * oneHeight,
+                                     offsetY + ui->groupBoxData->y() + oneHeight * i,
                                      50, 21);
         this->layout()->addWidget(nodes[i].labelTime);
 
 
         nodes[i].checkIsRepeat = new QCheckBox("Repeat", ui->groupBoxData);
         nodes[i].checkIsRepeat->setGeometry(offsetX + ui->groupBoxData->x() + 440,
-                                     offsetY + ui->groupBoxData->y() * oneHeight,
+                                     offsetY + ui->groupBoxData->y() + oneHeight * i,
                                      70, 21);
         this->layout()->addWidget(nodes[i].checkIsRepeat);
-
-
 
 
     }

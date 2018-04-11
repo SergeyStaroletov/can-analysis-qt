@@ -11,28 +11,12 @@
 #include <QMessageBox>
 #include <QString>
 
-#include <readfromcomthread.h>
+#include "readfromcomthread.h"
+#include "fontchangerthread.h"
 
-// each CAN UI line and internal data for it
-struct OneCANDisplayNode {
-  QLineEdit *editId;         // id of message
-  QLineEdit *editData;       // message data
-  QLineEdit *editDecode;     // ascii decode data
-  QLabel *labelTime;         // label for show time diff after previous message
-  QCheckBox *checkIsRepeat;  // on if the last message was repeated
-  bool isUsed;            // isUsed = true if the data has already been filled
-  unsigned char id;       // CAN message id
-  unsigned char data[8];  // CAN data
-  int dataLen;            // size of CAN data (0..7)
-  QDateTime lastTime;     // last time of data modifycation
-};
-
-const int nodeCountHalf = 25;             // count of data nodes in one column
-const int nodeCount = nodeCountHalf * 2;  // total data nodes
 
 OneCANDisplayNode nodes[nodeCount];  // array to store all CAN data nodes.
 QMap<unsigned char, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
-ReadFromComThread *reader;                          // reader thread object
 
 const int offsetX = 5;  // offset to start drawind from the left of the groupBox
 const int offsetY = 40;  // offset to start drawind from the top of the groupBox
@@ -123,6 +107,8 @@ void MainWindow::createControls() {
   }
 }
 
+
+
 // remove controls
 void MainWindow::removeControls() {
   for (int i = 0; i < nodeCount; i++) {
@@ -149,6 +135,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
   // memset(nodes, 0, sizeof(nodes));
+  changer = NULL;
+  reader = NULL;
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -156,6 +144,13 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::on_pushButtonStart_clicked() {}
 
 void MainWindow::on_pushButton_clicked() {
+
+    if (!changer) {
+        changer = new FontChangerThread(this);
+        changer->start();
+    }
+
+
   // delete old com port reader
   if (reader) {
     reader->Stop();
@@ -348,6 +343,17 @@ void MainWindow::processData(const QString &newData) {
       node->editDecode->setText(textRep);
       node->editDecode->setStyleSheet("font-weight: bold");
     }
+    QCoreApplication::processEvents();
+
 
   }  // for strings
 }
+
+/*
+ * Update (clear) CSS for given widget. Slot for execute from different thread
+ * @param wiget - it will be cleared
+*/
+void MainWindow::clearCSS(QWidget * widget) {
+    widget->setStyleSheet("");
+}
+

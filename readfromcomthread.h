@@ -13,10 +13,9 @@ public:
     inline void Stop() {isStopped = true;}
     ReadFromComThread(const QString & device);
     virtual ~ReadFromComThread();
+    void run() override;
 
-     void run() override;
-
- signals:
+signals:
     void newDataSignal(const QString & dataString);
 
 private:

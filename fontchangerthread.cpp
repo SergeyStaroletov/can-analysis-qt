@@ -1,9 +1,36 @@
 #include "fontchangerthread.h"
+#include <QCheckBox>
+#include <QLabel>
+#include <QLineEdit>
 #include "mainwindow.h"
 
-FontChangerThread::FontChangerThread(Ui::MainWindow *window)
-{
-    this->window = window;
+FontChangerThread::FontChangerThread(MainWindow *window) {
+  this->window = window;
+  // connect signal
+  QObject::connect(this, SIGNAL(clearMeCSS(QWidget *)), this->window,
+                   SLOT(clearCSS(QWidget *)));
+}
+
+FontChangerThread::~FontChangerThread() {
 }
 
 
+void FontChangerThread::run() {
+  while (true) {
+    for (int i = 0; i < nodeCount; i++) {
+      OneCANDisplayNode *node = &(nodes[i]);
+      QDateTime now = QDateTime::currentDateTime();
+
+      // if data timed more than 5 second from now...
+      if (node->isUsed && (node->lastTime.secsTo(now) > 5)) {
+        // change the font to normal in the gui thread
+        emit clearMeCSS(node->editData);
+        emit clearMeCSS(node->editId);
+        emit clearMeCSS(node->checkIsRepeat);
+        emit clearMeCSS(node->labelTime);
+      }
+    }
+
+    QThread::msleep(500);
+  }
+}

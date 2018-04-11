@@ -4,19 +4,20 @@
 #include <QMainWindow>
 #include <QThread>
 
-namespace Ui {
 class MainWindow;
-}
 
+class FontChangerThread : public QThread {
+  Q_OBJECT
+ public:
+  FontChangerThread(MainWindow *window);
+  virtual ~FontChangerThread();
 
-class FontChangerThread : public QThread
-{
-public:
-    FontChangerThread(Ui::MainWindow *window);
+  void run() override;
+ signals:
+  void clearMeCSS(QWidget *widget);
 
-
-private:
-    Ui::MainWindow *window;
+ private:
+  MainWindow *window;
 };
 
-#endif // FONTCHANGERTHREAD_H
+#endif  // FONTCHANGERTHREAD_H

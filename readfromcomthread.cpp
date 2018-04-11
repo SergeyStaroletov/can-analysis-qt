@@ -13,11 +13,15 @@ bool ReadFromComThread::OpenPortik() {
   serial->setPortName(device);
 
   serial->setBaudRate(115200);
-  return serial->open(QIODevice::ReadOnly);
+  //todo: remove tdd
+  return true;
+  //return serial->open(QIODevice::ReadOnly);
 }
 
 void ReadFromComThread::run() {
-  if (!serial->isOpen()) return;
+
+  //todo: remove tdd
+  //if (!serial->isOpen()) return;
 
   isStopped = false;
 
@@ -28,26 +32,27 @@ void ReadFromComThread::run() {
     data.clear();
 
     while (!ok) {
+
+        //wtf?
       do {
         QByteArray data0;
-        data0 = serial->readAll();
+        //todo: remove tdd
+        data0.append("F1 ");
+        data0.append("AA BB CC DD EE 11 22\n");
+        //data0 = serial->readAll();
         ok = data0.length() > 0;
         if (ok) data.append(data0);
         if (isStopped) break;
-        QThread::msleep(500);
-      } while (ok);
-
-      // qDebug() << data <<"\n";
+      } while (!ok);
 
       if (isStopped) return;
 
       ok = data.contains('\n');
+      QThread::msleep(500);
     }
 
     // process data
-
     const QString sendMe = QString::fromStdString(data.toStdString());
-
     emit newDataSignal(sendMe);
 
   } while (!isStopped);

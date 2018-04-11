@@ -7,6 +7,7 @@
 #include <QCheckBox>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QDebug>
 
 #include <readfromcomthread.h>
 
@@ -214,5 +215,7 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::processData(const QString & newData) {
 
     //process code
+
+
 
 }

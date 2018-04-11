@@ -21,7 +21,10 @@ QMap<unsigned char, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
 const int offsetX = 5;  // offset to start drawind from the left of the groupBox
 const int offsetY = 40;  // offset to start drawind from the top of the groupBox
 
-// create controls dynamically
+
+/*
+ * Create controls dynamically
+ */
 void MainWindow::createControls() {
   int maxHeight = ui->groupBoxData->height() - offsetY;
 
@@ -107,7 +110,9 @@ void MainWindow::createControls() {
   }
 }
 
-// remove controls
+/*
+ * Remove controls
+ */
 void MainWindow::removeControls() {
   for (int i = 0; i < nodeCount; i++) {
     this->layout()->removeWidget(nodes[i].editId);
@@ -129,6 +134,9 @@ void MainWindow::removeControls() {
   }
 }
 
+/*
+ * Fill the com port combo box
+ */
 void MainWindow::FillComPortsBox() {
   ui->comboBoxPort->clear();
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
@@ -136,6 +144,10 @@ void MainWindow::FillComPortsBox() {
   }
 }
 
+
+/*
+* Default constructor
+*/
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
@@ -145,9 +157,11 @@ MainWindow::MainWindow(QWidget *parent)
   FillComPortsBox();
 }
 
+
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_pushButtonStart_clicked() {}
+
 
 /*
  *  Starts the analisys from GUI

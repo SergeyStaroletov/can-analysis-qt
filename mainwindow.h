@@ -62,6 +62,7 @@ private:
     ReadFromComThread *reader;    // reader thread object
     FontChangerThread *changer;    // reader thread object
 
+    void FillComPortsBox();
 
     void createControls();
     void removeControls();

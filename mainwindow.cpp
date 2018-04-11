@@ -9,11 +9,11 @@
 #include <QLineEdit>
 #include <QMap>
 #include <QMessageBox>
+#include <QSerialPortInfo>
 #include <QString>
 
-#include "readfromcomthread.h"
 #include "fontchangerthread.h"
-
+#include "readfromcomthread.h"
 
 OneCANDisplayNode nodes[nodeCount];  // array to store all CAN data nodes.
 QMap<unsigned char, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
@@ -107,8 +107,6 @@ void MainWindow::createControls() {
   }
 }
 
-
-
 // remove controls
 void MainWindow::removeControls() {
   for (int i = 0; i < nodeCount; i++) {
@@ -131,35 +129,39 @@ void MainWindow::removeControls() {
   }
 }
 
+void MainWindow::FillComPortsBox() {
+  ui->comboBoxPort->clear();
+  Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
+    ui->comboBoxPort->addItem(port.portName());
+  }
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
   // memset(nodes, 0, sizeof(nodes));
   changer = NULL;
   reader = NULL;
+  FillComPortsBox();
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_pushButtonStart_clicked() {}
 
-
-
 /*
  *  Starts the analisys from GUI
-*/
+ */
 void MainWindow::on_pushButton_clicked() {
+  // check the window size
 
-    //check the window size
+  ui->groupBoxData->setGeometry(ui->groupBoxData->x(), ui->groupBoxData->y(),
+                                this->width(), this->height() - 100);
 
-    ui->groupBoxData->setGeometry(ui->groupBoxData->x(), ui->groupBoxData->y(), this->width(), this->height() - 100);
-
-
-    if (!changer) {
-        changer = new FontChangerThread(this);
-        changer->start();
-    }
-
+  if (!changer) {
+    changer = new FontChangerThread(this);
+    changer->start();
+  }
 
   // delete old com port reader
   if (reader) {
@@ -210,11 +212,9 @@ QString char2HexStr(unsigned char c) {
  * @returns modifies nodes array, nodeById map
  */
 void MainWindow::processData(const QString &newData) {
-
   // first: split to lines
   QStringList strings = newData.split("\n");
   for (int s = 0; s < strings.length(); s++) {
-
     // second: get bytes in array from each line
     QStringList bytes = strings.at(s).split(" ");
     int count = (bytes.length() <= 9) ? bytes.length() : 9;
@@ -293,11 +293,11 @@ void MainWindow::processData(const QString &newData) {
     QDateTime now = QDateTime::currentDateTime();
     QString timeStr;
     qint64 diff = node->lastTime.msecsTo(now);
-    if (diff < 10000) //9999ms max
+    if (diff < 10000)  // 9999ms max
       timeStr = QString::number(diff) + "ms";
     else {
       diff = node->lastTime.secsTo(now);
-      if (diff <= 600) //10 minutes max
+      if (diff <= 600)  // 10 minutes max
         timeStr = QString::number(diff) + "s";
       else {
         diff = node->lastTime.secsTo(now) / 60;
@@ -355,15 +355,11 @@ void MainWindow::processData(const QString &newData) {
     }
     QCoreApplication::processEvents();
 
-
   }  // for strings
 }
 
 /*
  * Update (clear) CSS for given widget. Slot for execute from different thread
  * @param wiget - it will be cleared
-*/
-void MainWindow::clearCSS(QWidget * widget) {
-    widget->setStyleSheet("");
-}
-
+ */
+void MainWindow::clearCSS(QWidget *widget) { widget->setStyleSheet(""); }

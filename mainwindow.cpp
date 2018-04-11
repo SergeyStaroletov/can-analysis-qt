@@ -205,10 +205,11 @@ QString char2HexStr(unsigned char c) {
  * @returns modifies nodes array, nodeById map
  */
 void MainWindow::processData(const QString &newData) {
-  QStringList strings = newData.split("\n");
 
   // first: split to lines
+  QStringList strings = newData.split("\n");
   for (int s = 0; s < strings.length(); s++) {
+
     // second: get bytes in array from each line
     QStringList bytes = strings.at(s).split(" ");
     int count = (bytes.length() <= 9) ? bytes.length() : 9;
@@ -262,7 +263,7 @@ void MainWindow::processData(const QString &newData) {
         QDateTime now = QDateTime::currentDateTime();
         int oldestIndex = 0;
         for (int i = 0; i < nodeCount; i++) {
-          qint64 currentDiff = node[i].lastTime.msecsTo(now);
+          qint64 currentDiff = nodes[i].lastTime.msecsTo(now);
           if (currentDiff > maxDiff) {
             maxDiff = currentDiff;
             oldestIndex = i;
@@ -287,11 +288,11 @@ void MainWindow::processData(const QString &newData) {
     QDateTime now = QDateTime::currentDateTime();
     QString timeStr;
     qint64 diff = node->lastTime.msecsTo(now);
-    if (diff < 10000)
+    if (diff < 10000) //9999ms max
       timeStr = QString::number(diff) + "ms";
     else {
       diff = node->lastTime.secsTo(now);
-      if (diff <= 600)
+      if (diff <= 600) //10 minutes max
         timeStr = QString::number(diff) + "s";
       else {
         diff = node->lastTime.secsTo(now) / 60;

@@ -26,11 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    readfromcomthread.cpp
+    readfromcomthread.cpp \
+    fontchangerthread.cpp
 
 HEADERS += \
         mainwindow.h \
-    readfromcomthread.h
+    readfromcomthread.h \
+    fontchangerthread.h
 
 FORMS += \
         mainwindow.ui

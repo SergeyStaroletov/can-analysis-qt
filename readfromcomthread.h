@@ -6,11 +6,18 @@
 
 class ReadFromComThread : public QThread
 {
+    Q_OBJECT
+
 public:
     bool OpenPortik();
+    inline void Stop() {isStopped = true;}
     ReadFromComThread(const QString & device);
-    void run() override;
+    virtual ~ReadFromComThread();
 
+     void run() override;
+
+ signals:
+    void newDataSignal(const QString & dataString);
 
 private:
     QString device;

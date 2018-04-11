@@ -96,7 +96,7 @@
     <property name="title">
      <string>Device port</string>
     </property>
-    <widget class="QComboBox" name="comboBox">
+    <widget class="QComboBox" name="comboBoxPort">
      <property name="geometry">
       <rect>
        <x>10</x>

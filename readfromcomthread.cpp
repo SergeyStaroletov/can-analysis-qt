@@ -4,6 +4,10 @@ ReadFromComThread::ReadFromComThread(const QString &device) {
   this->device = device;
 }
 
+ ReadFromComThread::~ReadFromComThread()
+{
+}
+
 bool ReadFromComThread::OpenPortik() {
   serial = new QSerialPort(this);
   serial->setPortName(device);
@@ -41,6 +45,10 @@ void ReadFromComThread::run() {
     }
 
     // process data
+
+    const QString sendMe = QString::fromStdString(data.toStdString());
+
+    emit newDataSignal(sendMe);
 
   } while (!isStopped);
 }

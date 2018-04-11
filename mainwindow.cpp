@@ -6,7 +6,9 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QDateTime>
+#include <QMessageBox>
 
+#include <readfromcomthread.h>
 
 struct OneCANDisplayNode {
 
@@ -25,6 +27,8 @@ struct OneCANDisplayNode {
 const int nodeCountHalf = 25;
 
 OneCANDisplayNode nodes[nodeCountHalf * 2];
+ReadFromComThread *reader;
+
 
 
 const int offsetX = 5;
@@ -155,6 +159,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     memset(nodes, 0, sizeof(nodes));
 
+
+
 }
 
 MainWindow::~MainWindow()
@@ -170,7 +176,43 @@ void MainWindow::on_pushButtonStart_clicked()
 
 void MainWindow::on_pushButton_clicked()
 {
+
+    //delete old com port reader
+    if (reader)  {
+        reader->Stop();
+        QObject::disconnect(reader, SIGNAL(newDataSignal(const QString &)), this, SLOT(processData(const QString &)));
+        QThread::sleep(500);
+        delete reader;
+        reader = NULL;
+
+    }
+
+    //new reader with device port
+    reader = new ReadFromComThread(ui->comboBoxPort->itemText(0));//bug
+
+    //check the port
+    if (!reader->OpenPortik()) {
+        QMessageBox::warning(this, "Problem","Cannot open port");
+        //return;
+    }
+
+    //create controls
     removeControls();
     createControls();
+
+    //connect signal
+    QObject::connect(reader, SIGNAL(newDataSignal(const QString &)), this, SLOT(processData(const QString &)));
+
+
+    //run loop
+    reader->start();
+
+}
+
+
+
+void MainWindow::processData(const QString & newData) {
+
+    //process code
 
 }

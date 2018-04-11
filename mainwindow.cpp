@@ -143,7 +143,17 @@ MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_pushButtonStart_clicked() {}
 
+
+
+/*
+ *  Starts the analisys from GUI
+*/
 void MainWindow::on_pushButton_clicked() {
+
+    //check the window size
+
+    ui->groupBoxData->setGeometry(ui->groupBoxData->x(), ui->groupBoxData->y(), this->width(), this->height() - 100);
+
 
     if (!changer) {
         changer = new FontChangerThread(this);

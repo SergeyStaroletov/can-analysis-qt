@@ -30,7 +30,7 @@ struct OneCANDisplayNode {
 };
 
 //bad but this is for not havig deal with extern/static const so on
-#define nodeCountHalf 27            // count of data nodes in one column
+#define nodeCountHalf 27            // count of data nodes in one column. up to 35@1440x900
 #define nodeCount (nodeCountHalf * 2)  // total data nodes
 
 extern  OneCANDisplayNode nodes[nodeCount];  // array to store all CAN data nodes.

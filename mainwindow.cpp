@@ -158,7 +158,29 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() {
+
+    if (changer) {
+        changer->Stop();
+        QThread::msleep(500);
+        delete changer;
+    }
+
+    // delete old com port reader
+    if (reader) {
+      reader->Stop();
+      QObject::disconnect(reader, SIGNAL(newDataSignal(const QString &)), this,
+                          SLOT(processData(const QString &)));
+      QThread::msleep(500);
+      delete reader;
+    }
+
+    removeControls();
+
+    delete ui;
+
+
+}
 
 void MainWindow::on_pushButtonStart_clicked() {}
 

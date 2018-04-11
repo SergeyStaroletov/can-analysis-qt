@@ -9,14 +9,17 @@ FontChangerThread::FontChangerThread(MainWindow *window) {
   // connect signal
   QObject::connect(this, SIGNAL(clearMeCSS(QWidget *)), this->window,
                    SLOT(clearCSS(QWidget *)));
+  isStopped = false;
 }
 
 FontChangerThread::~FontChangerThread() {
+    QObject::disconnect(this, SIGNAL(clearMeCSS(QWidget *)), this->window,
+                     SLOT(clearCSS(QWidget *)));
 }
 
 
 void FontChangerThread::run() {
-  while (true) {
+  while (!isStopped) {
     for (int i = 0; i < nodeCount; i++) {
       OneCANDisplayNode *node = &(nodes[i]);
       QDateTime now = QDateTime::currentDateTime();

@@ -11,13 +11,14 @@ class FontChangerThread : public QThread {
  public:
   FontChangerThread(MainWindow *window);
   virtual ~FontChangerThread();
-
   void run() override;
+  inline void Stop() {isStopped = true;}
  signals:
   void clearMeCSS(QWidget *widget);
 
  private:
   MainWindow *window;
+  bool isStopped;
 };
 
 #endif  // FONTCHANGERTHREAD_H

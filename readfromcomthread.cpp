@@ -25,11 +25,12 @@ void ReadFromComThread::run() {
 
   isStopped = false;
 
-  bool ok = false;
   QByteArray data;
 
   do {
     data.clear();
+
+    bool ok = false;
 
     while (!ok) {
 
@@ -38,7 +39,7 @@ void ReadFromComThread::run() {
         QByteArray data0;
         //todo: remove tdd
         data0.append("F1 ");
-        data0.append("AA BB CC DD EE 11 22\n");
+        data0.append("AA BB CC DD EE 11 22 \n");
         //data0 = serial->readAll();
         ok = data0.length() > 0;
         if (ok) data.append(data0);

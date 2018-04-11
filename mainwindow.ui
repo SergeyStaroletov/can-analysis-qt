@@ -140,10 +140,10 @@
      </rect>
     </property>
     <property name="title">
-     <string>GroupBox</string>
+     <string>Data</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="checkBoxHex">
     <property name="geometry">
      <rect>
       <x>870</x>

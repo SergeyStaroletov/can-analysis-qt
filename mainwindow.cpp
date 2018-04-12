@@ -142,7 +142,7 @@ void MainWindow::FillComPortsBox() {
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
     ui->comboBoxPort->addItem(port.portName());
 
-    if (port.portName().indexOf("cu.w") >= 0) //for me
+    if (port.portName().indexOf("cu.w") >= 0)  // for me
       ui->comboBoxPort->setCurrentIndex(index);
 
     index++;
@@ -380,8 +380,7 @@ void MainWindow::processData(const QString &newData) {
       }
     }
     // fill numberic data
-     if (dataChanged)
-    {
+    if (dataChanged) {
       QString dataStr;
       for (int i = 1; i < realCount; i++) {
         node->data[i - 1] = converted[i];

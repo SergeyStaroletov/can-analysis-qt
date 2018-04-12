@@ -150,14 +150,12 @@ void ReadFromComThread::run() {
   data.clear();
   data.append(dataToProcess);
 
-
-
   do {
-      QDateTime timeStartGetting = QDateTime::currentDateTime();
-      QString sendMe;
-      QThread::msleep(1);
+    QDateTime timeStartGetting = QDateTime::currentDateTime();
+    QString sendMe;
+    QThread::msleep(1);
 
-      int runn = 0;
+    int runn = 0;
     do {
       QCoreApplication::processEvents();
 
@@ -178,15 +176,14 @@ void ReadFromComThread::run() {
 
       // process data
       sendMe += dataRep;
-      //qDebug() << timeStartGetting.msecsTo(QDateTime::currentDateTime()) << "\n";
-
       runn++;
 
-    } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) < 100); //collect all data for not more than 100ms
+    } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) <
+             100);  // collect all data for not more than 100ms
 
-      //qDebug() << runn << " " << sendMe.length()  << "\n";
+    // qDebug() << runn << " " << sendMe.length()  << "\n";
 
-
+    //send signal with data collected in 100ms period
     emit newDataSignal(sendMe);
 
   } while (!isStopped);

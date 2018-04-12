@@ -21,7 +21,6 @@ QMap<unsigned char, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
 const int offsetX = 5;  // offset to start drawind from the left of the groupBox
 const int offsetY = 40;  // offset to start drawind from the top of the groupBox
 
-
 /*
  * Create controls dynamically
  */
@@ -139,15 +138,20 @@ void MainWindow::removeControls() {
  */
 void MainWindow::FillComPortsBox() {
   ui->comboBoxPort->clear();
+  int index = 0;
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
     ui->comboBoxPort->addItem(port.portName());
+
+    if (port.portName().indexOf("cu.w") >= 0) //for me
+      ui->comboBoxPort->setCurrentIndex(index);
+
+    index++;
   }
 }
 
-
 /*
-* Default constructor
-*/
+ * Default constructor
+ */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
@@ -157,33 +161,28 @@ MainWindow::MainWindow(QWidget *parent)
   FillComPortsBox();
 }
 
-
 MainWindow::~MainWindow() {
+  if (changer) {
+    changer->Stop();
+    QThread::msleep(500);
+    delete changer;
+  }
 
-    if (changer) {
-        changer->Stop();
-        QThread::msleep(500);
-        delete changer;
-    }
+  // delete old com port reader
+  if (reader) {
+    reader->Stop();
+    QObject::disconnect(reader, SIGNAL(newDataSignal(const QString &)), this,
+                        SLOT(processData(const QString &)));
+    QThread::msleep(500);
+    delete reader;
+  }
 
-    // delete old com port reader
-    if (reader) {
-      reader->Stop();
-      QObject::disconnect(reader, SIGNAL(newDataSignal(const QString &)), this,
-                          SLOT(processData(const QString &)));
-      QThread::msleep(500);
-      delete reader;
-    }
+  removeControls();
 
-    removeControls();
-
-    delete ui;
-
-
+  delete ui;
 }
 
 void MainWindow::on_pushButtonStart_clicked() {}
-
 
 /*
  *  Starts the analisys from GUI
@@ -210,12 +209,35 @@ void MainWindow::on_pushButton_clicked() {
   }
 
   // new reader with device port
-  reader = new ReadFromComThread(ui->comboBoxPort->itemText(0));  // bug
+  reader = new ReadFromComThread(ui->comboBoxPort->currentText());
 
   // check the port
   if (!reader->OpenPortik()) {
     QMessageBox::warning(this, "Problem", "Cannot open port");
-    // return;
+    return;
+  }
+
+  // setup MCP devices
+  QString arduinoMsg = "Please select a correct car";
+  bool result = false;
+
+  if (ui->comboBoxVehicle->currentIndex() == 0) {
+    // only mazda 6 for now
+
+    if (ui->radioButtonHS->isChecked())
+      result = reader->SetParams(true, 500, arduinoMsg);
+    else
+      result = reader->SetParams(false, 250, arduinoMsg);
+  }
+
+  if (!result) {
+    QMessageBox::warning(this, "Problem", arduinoMsg);
+    delete reader;
+    reader = NULL;
+
+    return;
+  } else {
+    QMessageBox::information(this, "Port setup correctly", arduinoMsg);
   }
 
   // create controls

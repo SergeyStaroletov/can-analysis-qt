@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QSerialPort>
+#include <QString>
 
 class ReadFromComThread : public QThread
 {
@@ -10,6 +11,7 @@ class ReadFromComThread : public QThread
 
 public:
     bool OpenPortik();
+    bool SetParams(bool busTypeHS, int speed,  QString & outputMsg); //set params, see arduino sketch
     inline void Stop() {isStopped = true;}
     ReadFromComThread(const QString & device);
     virtual ~ReadFromComThread();

@@ -2,6 +2,8 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QString>
+
 #include "mainwindow.h"
 
 FontChangerThread::FontChangerThread(MainWindow *window) {
@@ -12,11 +14,11 @@ FontChangerThread::FontChangerThread(MainWindow *window) {
   isStopped = false;
 }
 
-FontChangerThread::~FontChangerThread() {
-    QObject::disconnect(this, SIGNAL(clearMeCSS(QWidget *)), this->window,
-                     SLOT(clearCSS(QWidget *)));
-}
 
+FontChangerThread::~FontChangerThread() {
+  QObject::disconnect(this, SIGNAL(clearMeCSS(QWidget *)), this->window,
+                      SLOT(clearCSS(QWidget *)));
+}
 
 void FontChangerThread::run() {
   while (!isStopped) {

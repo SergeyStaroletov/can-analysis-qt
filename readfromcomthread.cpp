@@ -45,7 +45,7 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
       sendData[3] = 4;
       break;
     default:
-      outputMsg = "Only 100,125,250,500,1000 KBPS speed is supported";
+      outputMsg = "Only 100,125,250,500,1000 KBPS speeds are supported";
       return false;
   }
   // add type
@@ -54,7 +54,6 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
   else
     sendData[2] = 1;
 
-  for (int i = 0; i < 1; i++) {
     const char *sending = reinterpret_cast<char *>(sendData);
 
     QByteArray resp;
@@ -70,9 +69,12 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
       }
     } while (outputMsg.indexOf("\n") < 0);
 
+    QThread::msleep(1000);
+    serial->readAll();
+    serial->flush();
     // sending setup data buffer
     serial->write(QByteArray::fromRawData(sending, sizeof(sendData)));
-    serial->waitForBytesWritten(100);
+    serial->waitForBytesWritten(1000);
     QCoreApplication::processEvents();
     serial->flush();
     serial->waitForReadyRead(100);
@@ -100,9 +102,6 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
       return true;
     }
 
-   // QThread::msleep(1000);
-  }
-
   return false;
 }
 
@@ -127,34 +126,43 @@ void ReadFromComThread::run() {
   isStopped = false;
 
   QByteArray data;
+  QString dataRep;
+  QString dataToProcess;
+
+  //pass all data to /n
+  int indexOf = -1;
+  do {
+      QByteArray data0 = serial->readAll();
+      if (data0.length() > 0) data.append(data0);
+      dataRep = QString::fromStdString(data.toStdString());
+      indexOf = dataRep.indexOf("\n");
+  } while (indexOf < 0);
+
+  //we get from \n to end (start of new substring)
+  dataToProcess = dataRep.mid(indexOf + 1);
+
+  data.clear();
+  data.append(dataToProcess);
+
 
   do {
-    data.clear();
+    QCoreApplication::processEvents();
+    QThread::msleep(50);
 
-    bool ok = false;
+    do {
+        QByteArray data0 = serial->readAll();
+        if (data0.length() > 0) data.append(data0);
+        dataRep = QString::fromStdString(data.toStdString());
+        indexOf = dataRep.indexOf("\n");
+    } while (indexOf < 0);
+     QString dataToProcessNext = dataRep.mid(indexOf + 1);
 
-    while (!ok) {
-      // wtf?
-      do {
-        QByteArray data0;
-        // todo: remove tdd
-        data0.append(generator());
-        // data0.append("F1 ");
-        // data0.append("AA BB CC DD EE 11 22 \n");
-        // data0 = serial->readAll();
-        ok = data0.length() > 0;
-        if (ok) data.append(data0);
-        if (isStopped) break;
-      } while (!ok);
+     data.clear();
+     data.append(dataToProcessNext);
 
-      if (isStopped) return;
-
-      ok = data.contains('\n');
-      QThread::msleep(100);
-    }
 
     // process data
-    const QString sendMe = QString::fromStdString(data.toStdString());
+    const QString sendMe = dataRep;
     emit newDataSignal(sendMe);
 
   } while (!isStopped);

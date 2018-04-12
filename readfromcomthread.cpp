@@ -1,5 +1,6 @@
 #include "readfromcomthread.h"
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
 
 QString generator() {
@@ -18,7 +19,7 @@ QString generator() {
 }
 
 ReadFromComThread::ReadFromComThread(const QString &device) {
-  this->device =  device;
+  this->device = device;
 }
 
 ReadFromComThread::~ReadFromComThread() { serial->close(); }
@@ -54,53 +55,58 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
   else
     sendData[2] = 1;
 
-    const char *sending = reinterpret_cast<char *>(sendData);
+  const char *sending = reinterpret_cast<char *>(sendData);
 
-    QByteArray resp;
+  QByteArray resp;
 
-    // waiting Arduino to be ready
-    outputMsg = "";
-    do {
-      QCoreApplication::processEvents();
-      if (serial->bytesAvailable() > 30) {
-        QByteArray data = serial->readAll();
-        if (data.length() > 0) resp.append(data);
-        outputMsg = QString::fromStdString(resp.toStdString());
-      }
-    } while (outputMsg.indexOf("\n") < 0);
-
-    QThread::msleep(1000);
-    serial->readAll();
-    serial->flush();
-    // sending setup data buffer
-    serial->write(QByteArray::fromRawData(sending, sizeof(sendData)));
-    serial->waitForBytesWritten(1000);
+  // waiting Arduino to be ready
+  outputMsg = "";
+  do {
     QCoreApplication::processEvents();
-    serial->flush();
-    serial->waitForReadyRead(100);
-
-    // waiting the reply
-    resp.clear();
-    do {
-      QCoreApplication::processEvents();
-      // if (serial->bytesAvailable() > 0) {
+    if (serial->bytesAvailable() > 30) {
       QByteArray data = serial->readAll();
-
-      if (data.length() > 0) {
-        resp.append(data);
-        qDebug() << data;
-      }
+      if (data.length() > 0) resp.append(data);
       outputMsg = QString::fromStdString(resp.toStdString());
-
-
-    } while ((outputMsg.indexOf("init ok") < 0) &&
-             (outputMsg.indexOf("init fail") < 0));
-
-    serial->flush();
-
-    if (outputMsg.indexOf("init ok") > 0) {
-      return true;
     }
+  } while (outputMsg.indexOf("\n") < 0);
+
+  QThread::msleep(1000);
+  serial->readAll();
+  serial->flush();
+  // sending setup data buffer
+  serial->write(QByteArray::fromRawData(sending, sizeof(sendData)));
+  serial->waitForBytesWritten(1000);
+  QCoreApplication::processEvents();
+  serial->flush();
+  serial->waitForReadyRead(100);
+
+  // waiting the reply
+  QDateTime timeStart = QDateTime::currentDateTime();
+  resp.clear();
+  do {
+    QCoreApplication::processEvents();
+    // if (serial->bytesAvailable() > 0) {
+    QByteArray data = serial->readAll();
+
+    if (data.length() > 0) {
+      resp.append(data);
+      qDebug() << data;
+    }
+    outputMsg = QString::fromStdString(resp.toStdString());
+
+    if (timeStart.secsTo(QDateTime::currentDateTime()) > 5) {
+      outputMsg = "Init fail with timeout. Try again.";
+      break;
+    }
+
+  } while ((outputMsg.indexOf("init ok") < 0) &&
+           (outputMsg.indexOf("init fail") < 0));
+
+  serial->flush();
+
+  if (outputMsg.indexOf("init ok") > 0) {
+    return true;
+  }
 
   return false;
 }
@@ -129,40 +135,58 @@ void ReadFromComThread::run() {
   QString dataRep;
   QString dataToProcess;
 
-  //pass all data to /n
+  // pass all data to /n
   int indexOf = -1;
   do {
-      QByteArray data0 = serial->readAll();
-      if (data0.length() > 0) data.append(data0);
-      dataRep = QString::fromStdString(data.toStdString());
-      indexOf = dataRep.indexOf("\n");
+    QByteArray data0 = serial->readAll();
+    if (data0.length() > 0) data.append(data0);
+    dataRep = QString::fromStdString(data.toStdString());
+    indexOf = dataRep.indexOf("\n");
   } while (indexOf < 0);
 
-  //we get from \n to end (start of new substring)
+  // we get from \n to end (start of new substring)
   dataToProcess = dataRep.mid(indexOf + 1);
 
   data.clear();
   data.append(dataToProcess);
 
 
-  do {
-    QCoreApplication::processEvents();
-    QThread::msleep(50);
 
+  do {
+      QDateTime timeStartGetting = QDateTime::currentDateTime();
+      QString sendMe;
+      QThread::msleep(1);
+
+      int runn = 0;
     do {
+      QCoreApplication::processEvents();
+
+      QThread::msleep(10);
+
+      do {
+        QThread::msleep(0);
+
         QByteArray data0 = serial->readAll();
         if (data0.length() > 0) data.append(data0);
         dataRep = QString::fromStdString(data.toStdString());
         indexOf = dataRep.indexOf("\n");
-    } while (indexOf < 0);
-     QString dataToProcessNext = dataRep.mid(indexOf + 1);
+      } while (indexOf < 0);
+      QString dataToProcessNext = dataRep.mid(indexOf + 1);
 
-     data.clear();
-     data.append(dataToProcessNext);
+      data.clear();
+      data.append(dataToProcessNext);
+
+      // process data
+      sendMe += dataRep;
+      //qDebug() << timeStartGetting.msecsTo(QDateTime::currentDateTime()) << "\n";
+
+      runn++;
+
+    } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) < 100); //collect all data for not more than 100ms
+
+      //qDebug() << runn << " " << sendMe.length()  << "\n";
 
 
-    // process data
-    const QString sendMe = dataRep;
     emit newDataSignal(sendMe);
 
   } while (!isStopped);

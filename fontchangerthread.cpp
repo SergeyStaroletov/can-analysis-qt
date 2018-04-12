@@ -21,7 +21,10 @@ FontChangerThread::~FontChangerThread() {
 }
 
 void FontChangerThread::run() {
+
   while (!isStopped) {
+
+
     for (int i = 0; i < nodeCount; i++) {
       OneCANDisplayNode *node = &(nodes[i]);
       QDateTime now = QDateTime::currentDateTime();
@@ -31,6 +34,7 @@ void FontChangerThread::run() {
         // change the font to normal in the gui thread
         emit clearMeCSS(node->editData);
         emit clearMeCSS(node->editId);
+        emit clearMeCSS(node->editDecode);
         emit clearMeCSS(node->checkIsRepeat);
         emit clearMeCSS(node->labelTime);
       }

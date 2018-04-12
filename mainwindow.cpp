@@ -380,7 +380,7 @@ void MainWindow::processData(const QString &newData) {
       }
     }
     // fill numberic data
-    // if (dataChanged)
+     if (dataChanged)
     {
       QString dataStr;
       for (int i = 1; i < realCount; i++) {

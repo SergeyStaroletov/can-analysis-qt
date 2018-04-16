@@ -227,7 +227,7 @@ void MainWindow::on_pushButton_clicked() {
     if (ui->radioButtonHS->isChecked())
       result = reader->SetParams(true, 500, arduinoMsg);
     else
-      result = reader->SetParams(false, 250, arduinoMsg);
+      result = reader->SetParams(false, 125, arduinoMsg);
   }
 
   if (!result) {

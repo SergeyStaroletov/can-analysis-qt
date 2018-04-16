@@ -43,7 +43,7 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
       sendData[3] = 3;
       break;
     case 1000:
-      sendData[3] = 4;
+      sendData[3] = 5;
       break;
     default:
       outputMsg = "Only 100,125,250,500,1000 KBPS speeds are supported";
@@ -177,14 +177,13 @@ void ReadFromComThread::run() {
       // process data
       sendMe += dataRep;
       runn++;
-
+    break;
     } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) <
              100);  // collect all data for not more than 100ms
 
-    // qDebug() << runn << " " << sendMe.length()  << "\n";
-
+    //qDebug() << sendMe << "\n";
     //send signal with data collected in 100ms period
-    emit newDataSignal(sendMe);
+    emit newDataSignal(dataRep);
 
   } while (!isStopped);
 }

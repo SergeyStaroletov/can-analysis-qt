@@ -75,7 +75,7 @@ void loop() {
   {
     CAN.readMsgBuf(&len, buf);              // read data, len: data length, buf: data buf
 
-    unsigned char canId = CAN.getCanId();
+    unsigned short canId = CAN.getCanId();
 
     Serial.print(canId, HEX);
     Serial.print(" ");

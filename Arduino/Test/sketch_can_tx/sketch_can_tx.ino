@@ -11,7 +11,7 @@
 // v0.9b and v1.0 is default D10
 const int SPI_CS_PIN = 10;
 
-int num = 0;
+char num = 0;
 int index = 0;
 MCP_CAN CAN(SPI_CS_PIN);  // Set CS pin
 
@@ -36,7 +36,7 @@ void loop() {
   unsigned char len = 0;
   unsigned char buf[8];
 
-  num = random(255);
+  num = random(10000); //now we test with 2 byte data
 
   unsigned char stmp[8] = {'h', 'e', 'l', 'l', 'o', ' ', 's', 'e'};
 

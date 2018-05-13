@@ -43,7 +43,7 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
       sendData[3] = 3;
       break;
     case 1000:
-      sendData[3] = 5;
+      sendData[3] = 4;
       break;
     default:
       outputMsg = "Only 100,125,250,500,1000 KBPS speeds are supported";

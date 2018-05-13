@@ -16,7 +16,7 @@
 #include "readfromcomthread.h"
 
 OneCANDisplayNode nodes[nodeCount];  // array to store all CAN data nodes.
-QMap<unsigned char, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
+QMap<unsigned short, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
 
 const int offsetX = 5;  // offset to start drawind from the left of the groupBox
 const int offsetY = 40;  // offset to start drawind from the top of the groupBox
@@ -142,7 +142,7 @@ void MainWindow::FillComPortsBox() {
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
     ui->comboBoxPort->addItem(port.portName());
 
-    if (port.portName().indexOf("cu.w") >= 0)  // for me
+    if (port.portName().indexOf("cu.w") >= 0)  // for me, remove to get all the com ports in list
       ui->comboBoxPort->setCurrentIndex(index);
 
     index++;
@@ -257,9 +257,9 @@ void MainWindow::on_pushButton_clicked() {
  * @param c - char (255)
  * @return hex upercase string (FF)
  */
-QString char2HexStr(unsigned char c) {
-  QString cStr = QString("%1").arg((int)c, 0, 16).toUpper();
-  if (cStr.length() > 2) cStr = cStr.right(2);
+QString char2HexStr(unsigned short c) {
+  QString cStr = QString("%1").arg((int)c, 0, 16).toUpper().trimmed();
+  //if (cStr.length() > 2) cStr = cStr.right(2);
   return cStr;
 }
 
@@ -277,7 +277,7 @@ void MainWindow::processData(const QString &newData) {
     QStringList bytes = strings.at(s).split(" ");
     int count = (bytes.length() <= 9) ? bytes.length() : 9;
 
-    unsigned char converted[9];
+    unsigned short converted[9];
 
     // convert to normal chars
     int realCount = 0;
@@ -288,14 +288,14 @@ void MainWindow::processData(const QString &newData) {
       uint nHex = oneByteHex.toUInt(&bStatus, 16);
       if (!bStatus) continue;
 
-      converted[realCount++] = (unsigned char)nHex;
+      converted[realCount++] = (unsigned short)nHex;
     }
     count = realCount;
 
     if (count == 0) continue;  // skip ""
 
     // find corresponding node by id
-    unsigned char id = converted[0];
+    unsigned short id = converted[0];
     OneCANDisplayNode *node = NULL;
     if (nodeById.contains(id)) {
       node = nodeById[id];

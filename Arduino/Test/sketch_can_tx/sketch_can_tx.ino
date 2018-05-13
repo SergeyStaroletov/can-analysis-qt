@@ -13,6 +13,9 @@ const int SPI_CS_PIN = 10;
 
 char num = 0;
 int index = 0;
+
+
+
 MCP_CAN CAN(SPI_CS_PIN);  // Set CS pin
 
 void setup() {
@@ -21,7 +24,9 @@ void setup() {
 START_INIT:
 
   if (CAN_OK ==
-      CAN.begin(CAN_500KBPS, MCP_8MHz))  // init can bus : baudrate = 500k
+     // CAN.begin(CAN_500KBPS, MCP_8MHz))  // init can bus : baudrate = 500k
+     CAN.begin(CAN_125KBPS, MCP_8MHz))  // init can bus : baudrate = 500k
+
   {
     Serial.println("CAN BUS Shield init ok!");
   } else {
@@ -38,12 +43,14 @@ void loop() {
 
   num = random(10000); //now we test with 2 byte data
 
-  unsigned char stmp[8] = {'h', 'e', 'l', 'l', 'o', ' ', 's', 'e'};
+unsigned char stmp[8] = {'H', 'e', 00 , 01 , 02, ' ', 's', 'e'};
+
 
   // send generated message
   CAN.sendMsgBuf(num, 0, 8, stmp);
 
-  // delay(1000);
+
+   delay(50);
 
   index = random(8);
 

@@ -129,6 +129,8 @@ void ReadFromComThread::run() {
   // todo: remove tdd
   // if (!serial->isOpen()) return;
 
+  static int nTries;
+
   isStopped = false;
 
   QByteArray data;
@@ -141,6 +143,7 @@ void ReadFromComThread::run() {
     QByteArray data0 = serial->readAll();
     if (data0.length() > 0) data.append(data0);
     dataRep = QString::fromStdString(data.toStdString());
+      //qDebug() << dataRep << "\n";
     indexOf = dataRep.indexOf("\n");
   } while (indexOf < 0);
 
@@ -181,9 +184,12 @@ void ReadFromComThread::run() {
     } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) <
              100);  // collect all data for not more than 100ms
 
-    //qDebug() << sendMe << "\n";
+   qDebug() << dataRep << "\n";
     //send signal with data collected in 100ms period
-    emit newDataSignal(dataRep);
+
+    nTries++;
+
+   if ((nTries % 10) == 0) emit newDataSignal(dataRep);
 
   } while (!isStopped);
 }

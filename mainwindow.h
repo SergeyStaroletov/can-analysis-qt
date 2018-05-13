@@ -23,7 +23,7 @@ struct OneCANDisplayNode {
   QLabel *labelTime;         // label for show time diff after previous message
   QCheckBox *checkIsRepeat;  // on if the last message was repeated
   bool isUsed;            // isUsed = true if the data has already been filled
-  unsigned char id;       // CAN message id
+  unsigned short id;      // CAN message id
   unsigned char data[8];  // CAN data
   int dataLen;            // size of CAN data (0..7)
   QDateTime lastTime;     // last time of data modifycation

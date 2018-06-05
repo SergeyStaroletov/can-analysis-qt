@@ -15,7 +15,7 @@ public:
     explicit DialogRecord(QWidget *parent = 0);
     ~DialogRecord();
 
-private:
+//private:
     Ui::DialogRecord *ui;
 };
 

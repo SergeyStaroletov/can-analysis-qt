@@ -120,8 +120,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>720</x>
-      <y>30</y>
+      <x>710</x>
+      <y>10</y>
       <width>113</width>
       <height>41</height>
      </rect>
@@ -152,14 +152,40 @@
    <widget class="QCheckBox" name="checkBoxHex">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>40</y>
+      <x>720</x>
+      <y>50</y>
       <width>87</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
      <string>Hex</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonRecord">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>10</y>
+      <width>113</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Record</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonStopRec">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>50</y>
+      <width>113</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop</string>
     </property>
    </widget>
   </widget>

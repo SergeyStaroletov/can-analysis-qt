@@ -11,6 +11,8 @@ class ReadFromComThread : public QThread
 
 public:
     bool OpenPortik();
+    bool ClosePortik();
+
     bool SetParams(bool busTypeHS, int speed,  QString & outputMsg); //set params, see arduino sketch
     inline void Stop() {isStopped = true;}
     ReadFromComThread(const QString & device);

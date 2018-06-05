@@ -8,8 +8,10 @@
 class QLineEdit;
 class QLabel;
 class QCheckBox;
+class QComboBox;
 class ReadFromComThread;
 class FontChangerThread;
+
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +51,9 @@ public:
 
 public slots:
     void processData(const QString & newData);
+    void saveData1(const QString &newData);
+    void saveData2(const QString &newData);
+
     void clearCSS(QWidget * widget);
 
 private slots:
@@ -57,15 +62,25 @@ private slots:
 private slots:
     void on_pushButtonStart_clicked();
     
+    void on_pushButtonRecord_clicked();
+
+    void on_pushButtonStopRec_clicked();
+
 private:
     Ui::MainWindow *ui;
     ReadFromComThread *reader;    // reader thread object
     FontChangerThread *changer;    // reader thread object
 
-    void FillComPortsBox();
+    QString currentRec;
+    ReadFromComThread *can1Reader, *can2Reader;
+
+    void FillComPortsBox(QComboBox *combo);
 
     void createControls();
     void removeControls();
+
+    void saveData(bool type, const QString &newData);
+
 };
 
 #endif // MAINWINDOW_H

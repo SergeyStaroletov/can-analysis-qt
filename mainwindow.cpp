@@ -11,6 +11,14 @@
 #include <QMessageBox>
 #include <QSerialPortInfo>
 #include <QString>
+#include <QFile>
+#include <QDir>
+
+
+
+#include "dialogrecord.h"
+#include "ui_dialogrecord.h"
+
 
 #include "fontchangerthread.h"
 #include "readfromcomthread.h"
@@ -136,14 +144,14 @@ void MainWindow::removeControls() {
 /*
  * Fill the com port combo box
  */
-void MainWindow::FillComPortsBox() {
-  ui->comboBoxPort->clear();
+void MainWindow::FillComPortsBox(QComboBox *combo) {
+  combo->clear();
   int index = 0;
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
-    ui->comboBoxPort->addItem(port.portName());
+    combo->addItem(port.portName());
 
-    if (port.portName().indexOf("cu.w") >= 0)  // for me, remove to get all the com ports in list
-      ui->comboBoxPort->setCurrentIndex(index);
+    if (port.portName().indexOf("cu.w") >= 0)  // for my sustem only
+      combo->setCurrentIndex(index);
 
     index++;
   }
@@ -158,7 +166,7 @@ MainWindow::MainWindow(QWidget *parent)
   // memset(nodes, 0, sizeof(nodes));
   changer = NULL;
   reader = NULL;
-  FillComPortsBox();
+  FillComPortsBox(ui->comboBoxPort);
 }
 
 MainWindow::~MainWindow() {
@@ -420,3 +428,195 @@ void MainWindow::processData(const QString &newData) {
  * @param wiget - it will be cleared
  */
 void MainWindow::clearCSS(QWidget *widget) { widget->setStyleSheet(""); }
+
+
+
+QMap<QString, QFile *> filesMap;
+
+/*
+ * Recorder
+ * */
+void MainWindow::on_pushButtonRecord_clicked()
+{
+
+    DialogRecord * dlg = new DialogRecord(this);
+
+
+    this->FillComPortsBox(dlg->ui->comboBoxCAN1);//sorry for this private->public changings
+    this->FillComPortsBox(dlg->ui->comboBoxCAN2);
+
+    if (dlg->exec() == QDialog::Accepted) {
+
+        if (dlg->ui->checkBoxCAN1->isChecked() && dlg->ui->checkBoxCAN2->isChecked()) {
+            if (dlg->ui->comboBoxCAN1->currentIndex() == dlg->ui->comboBoxCAN2->currentIndex()) {
+                QMessageBox::warning(this, "Problem", "Ports must be different");
+                return;
+            }
+        }
+
+        //dir to store the data
+        this->currentRec = dlg->ui->lineEditName->text();
+        if (!QDir(currentRec).exists()) {
+            QDir().mkdir(currentRec);
+        }
+
+        if (dlg->ui->checkBoxCAN1->isChecked()) {
+            //create the thread
+            can1Reader = new ReadFromComThread(dlg->ui->comboBoxCAN1->currentText());
+            //open port
+            if (!can1Reader->OpenPortik()) {
+              QMessageBox::warning(this, "Problem", "Cannot open port " + dlg->ui->comboBoxCAN1->currentText());
+              delete can1Reader;
+              return;
+            }
+            bool result = false;
+            QString msg;
+            //setup can
+              result = can1Reader->SetParams(true, 500, msg);
+           if (!result) {
+             QMessageBox::warning(this, "Problem with CAN1", msg);
+             delete can1Reader;
+             return;
+           }
+            //connect listener
+            QObject::connect(can1Reader, SIGNAL(newDataSignal(const QString &)), this,
+                             SLOT(saveData1(const QString &)));
+            //start analisys
+          //  can1Reader->start();
+        }
+
+        if (dlg->ui->checkBoxCAN2->isChecked()) {
+            //create the thread
+            can2Reader = new ReadFromComThread(dlg->ui->comboBoxCAN2->currentText());
+            //open port
+            if (!can2Reader->OpenPortik()) {
+              QMessageBox::warning(this, "Problem", "Cannot open port " + dlg->ui->comboBoxCAN2->currentText());
+              delete can2Reader;
+              return;
+            }
+            bool result = false;
+            QString msg;
+            //setup can
+              result = can2Reader->SetParams(false, 125, msg);
+           if (!result) {
+             QMessageBox::warning(this, "Problem with CAN2", msg);
+             delete can2Reader;
+             return;
+           }
+            //connect listener
+            QObject::connect(can2Reader, SIGNAL(newDataSignal(const QString &)), this,
+                             SLOT(saveData2(const QString &)));
+            //start analisys
+
+            can1Reader->start();
+
+            can2Reader->start();
+        }
+    }
+}
+
+
+void MainWindow::saveData1(const QString &newData) {
+    this->saveData(true, newData);
+}
+
+void MainWindow::saveData2(const QString &newData) {
+    this->saveData(false, newData);
+}
+
+void MainWindow::saveData(bool type, const QString &newData) {
+
+    static int iii;
+
+    QDateTime now = QDateTime::currentDateTime();
+    QString timeStamp = now.toString("yyyy-MM-dd hh:mm:ss.zzz");
+
+    // first: split to lines
+    QStringList strings = newData.split("\n");
+    for (int s = 0; s < strings.length(); s++) {
+      // second: get bytes in array from each line
+      QStringList bytes = strings.at(s).split(" ");
+      int count = (bytes.length() <= 9) ? bytes.length() : 9;
+
+      unsigned short converted[9];
+
+      // convert to normal chars
+      int realCount = 0;
+      for (int i = 0; i < count; i++) {
+        QString oneByteHex = bytes.at(i);
+
+        bool bStatus = false;
+        uint nHex = oneByteHex.toUInt(&bStatus, 16);
+        if (!bStatus) continue;
+
+        converted[realCount++] = (unsigned short)nHex;
+      }
+      count = realCount;
+
+      if (count == 0 || count == 1) continue;  // skip ""
+
+        unsigned short id = converted[0];
+
+
+        for (int index = 1; index < count; index++)  if (converted[index] >= 0 && converted[index] <= 255)
+        {
+
+            //generate filename
+            QString fileName = currentRec + "/";
+            if (type) fileName += "CAN1_"; else  fileName += "CAN2_";
+            fileName += QString::number(id, 16) + "_";
+            fileName += QString::number(index) + ".csv";
+
+            QString fileData = timeStamp + "," + QString::number(converted[index]) + "\r\n";
+
+            //check the file by the id
+            if (filesMap.contains(fileName)) {
+
+                //we already did a deal with it
+
+                QFile *f = filesMap[fileName];
+                f->write(fileData.toLocal8Bit().data(), fileData.length());
+            } else {
+
+                //no, create and open file and map it
+                QFile *f = new QFile(fileName);
+
+                if (f->open(QFile::WriteOnly)) {
+
+                    QString fileHeader = "timestamp," + QString::number(id, 16) + "_" + QString::number(index) + "\r\n";
+                    f->write(fileData.toLocal8Bit().data(), fileData.length());
+                    filesMap.insert(fileName, f);
+                }
+            }
+
+           if ((iii % 100) == 0) qDebug() << fileData;
+           QCoreApplication::processEvents();
+
+            //QThread::msleep(10);
+
+        }
+
+
+    }
+}
+
+void MainWindow::on_pushButtonStopRec_clicked()
+{
+//stop the threads
+    if (this->can1Reader) this->can1Reader->Stop();
+    if (this->can2Reader) this->can2Reader->Stop();
+
+     if (this->can1Reader) this->can1Reader->ClosePortik();
+     if (this->can2Reader) this->can2Reader->ClosePortik();
+
+
+    QThread::msleep(1000);
+
+    for(auto e : filesMap)
+    {
+         e->close();
+    }
+
+
+
+}

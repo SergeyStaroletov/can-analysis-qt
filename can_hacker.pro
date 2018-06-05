@@ -27,12 +27,15 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     readfromcomthread.cpp \
-    fontchangerthread.cpp
+    fontchangerthread.cpp \
+    dialogrecord.cpp
 
 HEADERS += \
         mainwindow.h \
     readfromcomthread.h \
-    fontchangerthread.h
+    fontchangerthread.h \
+    dialogrecord.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    dialogrecord.ui

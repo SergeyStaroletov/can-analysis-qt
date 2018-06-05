@@ -111,6 +111,13 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
   return false;
 }
 
+bool ReadFromComThread::ClosePortik() {
+
+  // return true;
+   if (serial) serial->close();
+   return true;
+}
+
 bool ReadFromComThread::OpenPortik() {
   serial = new QSerialPort(this);
   serial->setPortName(device);
@@ -184,12 +191,13 @@ void ReadFromComThread::run() {
     } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) <
              100);  // collect all data for not more than 100ms
 
-   qDebug() << dataRep << "\n";
+   //qDebug() << dataRep << "\n";
     //send signal with data collected in 100ms period
 
     nTries++;
 
-   if ((nTries % 10) == 0) emit newDataSignal(dataRep);
+   if ((nTries % 10) == 0)
+       emit newDataSignal(dataRep);
 
   } while (!isStopped);
 }

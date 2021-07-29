@@ -1,12 +1,12 @@
-# can_hacker
+# can-analysis-qt
 
 A test application (in progress) to get data from Arduino device via com port 
 
-that is getting packets from the CAN network from a car. 
+It is gets packets from the CAN network from a car. 
 
 Now it is simple visualizing the data by creating the controls on form dynamically and tracing the data by CAN Id. 
 
-Arduino sketch is also provided. Connection photo and test tool is also present.
+Arduino sketch is also provided. Connection photo and a test tool are also present.
  
 The app supports Aduino Nano with 2 MCP 2515 (8mhz) connected to SPI with using different CS lines and different CAN speeds
 

@@ -9,7 +9,8 @@ QString generator() {
   for (int i = 0; i <= 9; i++) {
     int c = qrand() % 256;
     QString cStr = QString("%1").arg(c, 0, 16).toUpper();
-    if (cStr.length() > 2) cStr = cStr.right(2);
+    if (cStr.length() > 2)
+      cStr = cStr.right(2);
     result += cStr + " ";
   }
 
@@ -30,24 +31,24 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
   unsigned char sendData[4] = {0x19, 0x84, 0, 0};
   // add speed
   switch (speed) {
-    case 100:
-      sendData[3] = 0;
-      break;
-    case 125:
-      sendData[3] = 1;
-      break;
-    case 250:
-      sendData[3] = 2;
-      break;
-    case 500:
-      sendData[3] = 3;
-      break;
-    case 1000:
-      sendData[3] = 4;
-      break;
-    default:
-      outputMsg = "Only 100,125,250,500,1000 KBPS speeds are supported";
-      return false;
+  case 100:
+    sendData[3] = 0;
+    break;
+  case 125:
+    sendData[3] = 1;
+    break;
+  case 250:
+    sendData[3] = 2;
+    break;
+  case 500:
+    sendData[3] = 3;
+    break;
+  case 1000:
+    sendData[3] = 4;
+    break;
+  default:
+    outputMsg = "Only 100,125,250,500,1000 KBPS speeds are supported";
+    return false;
   }
   // add type
   if (busTypeHS)
@@ -65,7 +66,8 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
     QCoreApplication::processEvents();
     if (serial->bytesAvailable() > 30) {
       QByteArray data = serial->readAll();
-      if (data.length() > 0) resp.append(data);
+      if (data.length() > 0)
+        resp.append(data);
       outputMsg = QString::fromStdString(resp.toStdString());
     }
   } while (outputMsg.indexOf("\n") < 0);
@@ -114,8 +116,9 @@ bool ReadFromComThread::SetParams(bool busTypeHS, int speed,
 bool ReadFromComThread::ClosePortik() {
 
   // return true;
-   if (serial) serial->close();
-   return true;
+  if (serial)
+    serial->close();
+  return true;
 }
 
 bool ReadFromComThread::OpenPortik() {
@@ -148,9 +151,10 @@ void ReadFromComThread::run() {
   int indexOf = -1;
   do {
     QByteArray data0 = serial->readAll();
-    if (data0.length() > 0) data.append(data0);
+    if (data0.length() > 0)
+      data.append(data0);
     dataRep = QString::fromStdString(data.toStdString());
-      //qDebug() << dataRep << "\n";
+    // qDebug() << dataRep << "\n";
     indexOf = dataRep.indexOf("\n");
   } while (indexOf < 0);
 
@@ -175,7 +179,8 @@ void ReadFromComThread::run() {
         QThread::msleep(0);
 
         QByteArray data0 = serial->readAll();
-        if (data0.length() > 0) data.append(data0);
+        if (data0.length() > 0)
+          data.append(data0);
         dataRep = QString::fromStdString(data.toStdString());
         indexOf = dataRep.indexOf("\n");
       } while (indexOf < 0);
@@ -187,17 +192,17 @@ void ReadFromComThread::run() {
       // process data
       sendMe += dataRep;
       runn++;
-    break;
+      break;
     } while (timeStartGetting.msecsTo(QDateTime::currentDateTime()) <
-             100);  // collect all data for not more than 100ms
+             100); // collect all data for not more than 100ms
 
-   //qDebug() << dataRep << "\n";
-    //send signal with data collected in 100ms period
+    // qDebug() << dataRep << "\n";
+    // send signal with data collected in 100ms period
 
     nTries++;
 
-   if ((nTries % 10) == 0)
-       emit newDataSignal(dataRep);
+    if ((nTries % 10) == 0)
+      emit newDataSignal(dataRep);
 
   } while (!isStopped);
 }

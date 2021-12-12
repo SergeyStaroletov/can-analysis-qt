@@ -8,17 +8,17 @@ class MainWindow;
 
 class FontChangerThread : public QThread {
   Q_OBJECT
- public:
+public:
   FontChangerThread(MainWindow *window);
   virtual ~FontChangerThread();
   void run() override;
-  inline void Stop() {isStopped = true;}
- signals:
+  inline void Stop() { isStopped = true; }
+signals:
   void clearMeCSS(QWidget *widget);
 
- private:
+private:
   MainWindow *window;
   bool isStopped;
 };
 
-#endif  // FONTCHANGERTHREAD_H
+#endif // FONTCHANGERTHREAD_H

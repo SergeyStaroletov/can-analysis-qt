@@ -4,6 +4,8 @@
 #include <QCheckBox>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -11,23 +13,18 @@
 #include <QMessageBox>
 #include <QSerialPortInfo>
 #include <QString>
-#include <QFile>
-#include <QDir>
-
-
 
 #include "dialogrecord.h"
 #include "ui_dialogrecord.h"
 
-
 #include "fontchangerthread.h"
 #include "readfromcomthread.h"
 
-OneCANDisplayNode nodes[nodeCount];  // array to store all CAN data nodes.
-QMap<unsigned short, OneCANDisplayNode *> nodeById;  // map CAN id -> data node
+OneCANDisplayNode nodes[nodeCount]; // array to store all CAN data nodes.
+QMap<unsigned short, OneCANDisplayNode *> nodeById; // map CAN id -> data node
 
 const int offsetX = 5;  // offset to start drawind from the left of the groupBox
-const int offsetY = 40;  // offset to start drawind from the top of the groupBox
+const int offsetY = 40; // offset to start drawind from the top of the groupBox
 
 /*
  * Create controls dynamically
@@ -35,8 +32,8 @@ const int offsetY = 40;  // offset to start drawind from the top of the groupBox
 void MainWindow::createControls() {
   int maxHeight = ui->groupBoxData->height() - offsetY;
 
-  int oneHeight = maxHeight / nodeCountHalf;  // logical window to draw each
-                                              // node
+  int oneHeight = maxHeight / nodeCountHalf; // logical window to draw each
+                                             // node
 
   // first column
   for (int i = 0; i < nodeCountHalf; i++) {
@@ -48,7 +45,7 @@ void MainWindow::createControls() {
         offsetX + ui->groupBoxData->x(),
         offsetY + ui->groupBoxData->y() + oneHeight * i, 50, 21);
     this->layout()->addWidget(
-        nodes[i].editId);  // I know it is not good. No time to think.
+        nodes[i].editId); // I know it is not good. No time to think.
 
     nodes[i].editData = new QLineEdit(ui->groupBoxData);
     nodes[i].editData->setGeometry(
@@ -78,7 +75,7 @@ void MainWindow::createControls() {
   // second column
   const int addWidth =
       ui->groupBoxData->width() /
-      2;  // x offset to move the column from the start of first one
+      2; // x offset to move the column from the start of first one
 
   for (int i = 0; i < nodeCountHalf; i++) {
     nodes[i + nodeCountHalf].isUsed = false;
@@ -123,19 +120,24 @@ void MainWindow::createControls() {
 void MainWindow::removeControls() {
   for (int i = 0; i < nodeCount; i++) {
     this->layout()->removeWidget(nodes[i].editId);
-    if (nodes[i].editId != NULL) delete nodes[i].editId;
+    if (nodes[i].editId != NULL)
+      delete nodes[i].editId;
 
     this->layout()->removeWidget(nodes[i].editData);
-    if (nodes[i].editData != NULL) delete nodes[i].editData;
+    if (nodes[i].editData != NULL)
+      delete nodes[i].editData;
 
     this->layout()->removeWidget(nodes[i].editDecode);
-    if (nodes[i].editDecode != NULL) delete nodes[i].editDecode;
+    if (nodes[i].editDecode != NULL)
+      delete nodes[i].editDecode;
 
     this->layout()->removeWidget(nodes[i].labelTime);
-    if (nodes[i].labelTime != NULL) delete nodes[i].labelTime;
+    if (nodes[i].labelTime != NULL)
+      delete nodes[i].labelTime;
 
     this->layout()->removeWidget(nodes[i].checkIsRepeat);
-    if (nodes[i].checkIsRepeat != NULL) delete nodes[i].checkIsRepeat;
+    if (nodes[i].checkIsRepeat != NULL)
+      delete nodes[i].checkIsRepeat;
 
     // memset(nodes, 0, sizeof(nodes));
   }
@@ -150,7 +152,7 @@ void MainWindow::FillComPortsBox(QComboBox *combo) {
   Q_FOREACH (QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
     combo->addItem(port.portName());
 
-    if (port.portName().indexOf("cu.w") >= 0)  // for my sustem only
+    if (port.portName().indexOf("cu.w") >= 0) // for my sustem only
       combo->setCurrentIndex(index);
 
     index++;
@@ -267,7 +269,7 @@ void MainWindow::on_pushButton_clicked() {
  */
 QString char2HexStr(unsigned short c) {
   QString cStr = QString("%1").arg((int)c, 0, 16).toUpper().trimmed();
-  //if (cStr.length() > 2) cStr = cStr.right(2);
+  // if (cStr.length() > 2) cStr = cStr.right(2);
   return cStr;
 }
 
@@ -294,13 +296,15 @@ void MainWindow::processData(const QString &newData) {
 
       bool bStatus = false;
       uint nHex = oneByteHex.toUInt(&bStatus, 16);
-      if (!bStatus) continue;
+      if (!bStatus)
+        continue;
 
       converted[realCount++] = (unsigned short)nHex;
     }
     count = realCount;
 
-    if (count == 0) continue;  // skip ""
+    if (count == 0)
+      continue; // skip ""
 
     // find corresponding node by id
     unsigned short id = converted[0];
@@ -349,7 +353,8 @@ void MainWindow::processData(const QString &newData) {
       }
     }
 
-    if (!node) return;
+    if (!node)
+      return;
 
     // set node id
     node->editId->setText(char2HexStr(id));
@@ -359,11 +364,11 @@ void MainWindow::processData(const QString &newData) {
     QDateTime now = QDateTime::currentDateTime();
     QString timeStr;
     qint64 diff = node->lastTime.msecsTo(now);
-    if (diff < 10000)  // 9999ms max
+    if (diff < 10000) // 9999ms max
       timeStr = QString::number(diff) + "ms";
     else {
       diff = node->lastTime.secsTo(now);
-      if (diff <= 600)  // 10 minutes max
+      if (diff <= 600) // 10 minutes max
         timeStr = QString::number(diff) + "s";
       else {
         diff = node->lastTime.secsTo(now) / 60;
@@ -420,7 +425,7 @@ void MainWindow::processData(const QString &newData) {
     }
     QCoreApplication::processEvents();
 
-  }  // for strings
+  } // for strings
 }
 
 /*
@@ -429,194 +434,198 @@ void MainWindow::processData(const QString &newData) {
  */
 void MainWindow::clearCSS(QWidget *widget) { widget->setStyleSheet(""); }
 
-
-
 QMap<QString, QFile *> filesMap;
 
 /*
  * Recorder
  * */
-void MainWindow::on_pushButtonRecord_clicked()
-{
+void MainWindow::on_pushButtonRecord_clicked() {
 
-    DialogRecord * dlg = new DialogRecord(this);
+  DialogRecord *dlg = new DialogRecord(this);
 
+  this->FillComPortsBox(
+      dlg->ui->comboBoxCAN1); // sorry for this private->public changings
+  this->FillComPortsBox(dlg->ui->comboBoxCAN2);
 
-    this->FillComPortsBox(dlg->ui->comboBoxCAN1);//sorry for this private->public changings
-    this->FillComPortsBox(dlg->ui->comboBoxCAN2);
+  if (dlg->exec() == QDialog::Accepted) {
 
-    if (dlg->exec() == QDialog::Accepted) {
-
-        if (dlg->ui->checkBoxCAN1->isChecked() && dlg->ui->checkBoxCAN2->isChecked()) {
-            if (dlg->ui->comboBoxCAN1->currentIndex() == dlg->ui->comboBoxCAN2->currentIndex()) {
-                QMessageBox::warning(this, "Problem", "Ports must be different");
-                return;
-            }
-        }
-
-        //dir to store the data
-        this->currentRec = dlg->ui->lineEditName->text();
-        if (!QDir(currentRec).exists()) {
-            QDir().mkdir(currentRec);
-        }
-
-        if (dlg->ui->checkBoxCAN1->isChecked()) {
-            //create the thread
-            can1Reader = new ReadFromComThread(dlg->ui->comboBoxCAN1->currentText());
-            //open port
-            if (!can1Reader->OpenPortik()) {
-              QMessageBox::warning(this, "Problem", "Cannot open port " + dlg->ui->comboBoxCAN1->currentText());
-              delete can1Reader;
-              return;
-            }
-            bool result = false;
-            QString msg;
-            //setup can
-              result = can1Reader->SetParams(true, 500, msg);
-           if (!result) {
-             QMessageBox::warning(this, "Problem with CAN1", msg);
-             delete can1Reader;
-             return;
-           }
-            //connect listener
-            QObject::connect(can1Reader, SIGNAL(newDataSignal(const QString &)), this,
-                             SLOT(saveData1(const QString &)));
-            //start analisys
-          //  can1Reader->start();
-        }
-
-        if (dlg->ui->checkBoxCAN2->isChecked()) {
-            //create the thread
-            can2Reader = new ReadFromComThread(dlg->ui->comboBoxCAN2->currentText());
-            //open port
-            if (!can2Reader->OpenPortik()) {
-              QMessageBox::warning(this, "Problem", "Cannot open port " + dlg->ui->comboBoxCAN2->currentText());
-              delete can2Reader;
-              return;
-            }
-            bool result = false;
-            QString msg;
-            //setup can
-              result = can2Reader->SetParams(false, 125, msg);
-           if (!result) {
-             QMessageBox::warning(this, "Problem with CAN2", msg);
-             delete can2Reader;
-             return;
-           }
-            //connect listener
-            QObject::connect(can2Reader, SIGNAL(newDataSignal(const QString &)), this,
-                             SLOT(saveData2(const QString &)));
-            //start analisys
-
-            can1Reader->start();
-
-            can2Reader->start();
-        }
+    if (dlg->ui->checkBoxCAN1->isChecked() &&
+        dlg->ui->checkBoxCAN2->isChecked()) {
+      if (dlg->ui->comboBoxCAN1->currentIndex() ==
+          dlg->ui->comboBoxCAN2->currentIndex()) {
+        QMessageBox::warning(this, "Problem", "Ports must be different");
+        return;
+      }
     }
+
+    // dir to store the data
+    this->currentRec = dlg->ui->lineEditName->text();
+    if (!QDir(currentRec).exists()) {
+      QDir().mkdir(currentRec);
+    }
+
+    if (dlg->ui->checkBoxCAN1->isChecked()) {
+      // create the thread
+      can1Reader = new ReadFromComThread(dlg->ui->comboBoxCAN1->currentText());
+      // open port
+      if (!can1Reader->OpenPortik()) {
+        QMessageBox::warning(this, "Problem",
+                             "Cannot open port " +
+                                 dlg->ui->comboBoxCAN1->currentText());
+        delete can1Reader;
+        return;
+      }
+      bool result = false;
+      QString msg;
+      // setup can
+      result = can1Reader->SetParams(true, 500, msg);
+      if (!result) {
+        QMessageBox::warning(this, "Problem with CAN1", msg);
+        delete can1Reader;
+        return;
+      }
+      // connect listener
+      QObject::connect(can1Reader, SIGNAL(newDataSignal(const QString &)), this,
+                       SLOT(saveData1(const QString &)));
+      // start analisys
+      //  can1Reader->start();
+    }
+
+    if (dlg->ui->checkBoxCAN2->isChecked()) {
+      // create the thread
+      can2Reader = new ReadFromComThread(dlg->ui->comboBoxCAN2->currentText());
+      // open port
+      if (!can2Reader->OpenPortik()) {
+        QMessageBox::warning(this, "Problem",
+                             "Cannot open port " +
+                                 dlg->ui->comboBoxCAN2->currentText());
+        delete can2Reader;
+        return;
+      }
+      bool result = false;
+      QString msg;
+      // setup can
+      result = can2Reader->SetParams(false, 125, msg);
+      if (!result) {
+        QMessageBox::warning(this, "Problem with CAN2", msg);
+        delete can2Reader;
+        return;
+      }
+      // connect listener
+      QObject::connect(can2Reader, SIGNAL(newDataSignal(const QString &)), this,
+                       SLOT(saveData2(const QString &)));
+      // start analisys
+
+      can1Reader->start();
+
+      can2Reader->start();
+    }
+  }
 }
 
-
 void MainWindow::saveData1(const QString &newData) {
-    this->saveData(true, newData);
+  this->saveData(true, newData);
 }
 
 void MainWindow::saveData2(const QString &newData) {
-    this->saveData(false, newData);
+  this->saveData(false, newData);
 }
 
 void MainWindow::saveData(bool type, const QString &newData) {
 
-    static int iii;
+  static int iii;
 
-    QDateTime now = QDateTime::currentDateTime();
-    QString timeStamp = now.toString("yyyy-MM-dd hh:mm:ss.zzz");
+  QDateTime now = QDateTime::currentDateTime();
+  QString timeStamp = now.toString("yyyy-MM-dd hh:mm:ss.zzz");
 
-    // first: split to lines
-    QStringList strings = newData.split("\n");
-    for (int s = 0; s < strings.length(); s++) {
-      // second: get bytes in array from each line
-      QStringList bytes = strings.at(s).split(" ");
-      int count = (bytes.length() <= 9) ? bytes.length() : 9;
+  // first: split to lines
+  QStringList strings = newData.split("\n");
+  for (int s = 0; s < strings.length(); s++) {
+    // second: get bytes in array from each line
+    QStringList bytes = strings.at(s).split(" ");
+    int count = (bytes.length() <= 9) ? bytes.length() : 9;
 
-      unsigned short converted[9];
+    unsigned short converted[9];
 
-      // convert to normal chars
-      int realCount = 0;
-      for (int i = 0; i < count; i++) {
-        QString oneByteHex = bytes.at(i);
+    // convert to normal chars
+    int realCount = 0;
+    for (int i = 0; i < count; i++) {
+      QString oneByteHex = bytes.at(i);
 
-        bool bStatus = false;
-        uint nHex = oneByteHex.toUInt(&bStatus, 16);
-        if (!bStatus) continue;
+      bool bStatus = false;
+      uint nHex = oneByteHex.toUInt(&bStatus, 16);
+      if (!bStatus)
+        continue;
 
-        converted[realCount++] = (unsigned short)nHex;
-      }
-      count = realCount;
+      converted[realCount++] = (unsigned short)nHex;
+    }
+    count = realCount;
 
-      if (count == 0 || count == 1) continue;  // skip ""
+    if (count == 0 || count == 1)
+      continue; // skip ""
 
-        unsigned short id = converted[0];
+    unsigned short id = converted[0];
 
+    for (int index = 1; index < count; index++)
+      if (converted[index] >= 0 && converted[index] <= 255) {
 
-        for (int index = 1; index < count; index++)  if (converted[index] >= 0 && converted[index] <= 255)
-        {
+        // generate filename
+        QString fileName = currentRec + "/";
+        if (type)
+          fileName += "CAN1_";
+        else
+          fileName += "CAN2_";
+        fileName += QString::number(id, 16) + "_";
+        fileName += QString::number(index) + ".csv";
 
-            //generate filename
-            QString fileName = currentRec + "/";
-            if (type) fileName += "CAN1_"; else  fileName += "CAN2_";
-            fileName += QString::number(id, 16) + "_";
-            fileName += QString::number(index) + ".csv";
+        QString fileData =
+            timeStamp + "," + QString::number(converted[index]) + "\r\n";
 
-            QString fileData = timeStamp + "," + QString::number(converted[index]) + "\r\n";
+        // check the file by the id
+        if (filesMap.contains(fileName)) {
 
-            //check the file by the id
-            if (filesMap.contains(fileName)) {
+          // we already did a deal with it
 
-                //we already did a deal with it
+          QFile *f = filesMap[fileName];
+          f->write(fileData.toLocal8Bit().data(), fileData.length());
+        } else {
 
-                QFile *f = filesMap[fileName];
-                f->write(fileData.toLocal8Bit().data(), fileData.length());
-            } else {
+          // no, create and open file and map it
+          QFile *f = new QFile(fileName);
 
-                //no, create and open file and map it
-                QFile *f = new QFile(fileName);
+          if (f->open(QFile::WriteOnly)) {
 
-                if (f->open(QFile::WriteOnly)) {
-
-                    QString fileHeader = "timestamp," + QString::number(id, 16) + "_" + QString::number(index) + "\r\n";
-                    f->write(fileData.toLocal8Bit().data(), fileData.length());
-                    filesMap.insert(fileName, f);
-                }
-            }
-
-           if ((iii % 100) == 0) qDebug() << fileData;
-           QCoreApplication::processEvents();
-
-            //QThread::msleep(10);
-
+            QString fileHeader = "timestamp," + QString::number(id, 16) + "_" +
+                                 QString::number(index) + "\r\n";
+            f->write(fileData.toLocal8Bit().data(), fileData.length());
+            filesMap.insert(fileName, f);
+          }
         }
 
+        if ((iii % 100) == 0)
+          qDebug() << fileData;
+        QCoreApplication::processEvents();
 
-    }
+        // QThread::msleep(10);
+      }
+  }
 }
 
-void MainWindow::on_pushButtonStopRec_clicked()
-{
-//stop the threads
-    if (this->can1Reader) this->can1Reader->Stop();
-    if (this->can2Reader) this->can2Reader->Stop();
+void MainWindow::on_pushButtonStopRec_clicked() {
+  // stop the threads
+  if (this->can1Reader)
+    this->can1Reader->Stop();
+  if (this->can2Reader)
+    this->can2Reader->Stop();
 
-     if (this->can1Reader) this->can1Reader->ClosePortik();
-     if (this->can2Reader) this->can2Reader->ClosePortik();
+  if (this->can1Reader)
+    this->can1Reader->ClosePortik();
+  if (this->can2Reader)
+    this->can2Reader->ClosePortik();
 
+  QThread::msleep(1000);
 
-    QThread::msleep(1000);
-
-    for(auto e : filesMap)
-    {
-         e->close();
-    }
-
-
-
+  for (auto e : filesMap) {
+    e->close();
+  }
 }
